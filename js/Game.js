@@ -159,7 +159,7 @@ export default class Game {
     testCollisionPlayerSortie() {
         if (this.sortie && rectsOverlap(this.player.x - this.player.w / 2, this.player.y - this.player.h / 2, this.player.w, this.player.h, this.sortie.x, this.sortie.y, this.sortie.w, this.sortie.h)) {
             alert("Niveau réussi !");
-            // Vous pouvez également ajouter d'autres actions ici, comme passer au niveau suivant
+            
         }
     }
 
