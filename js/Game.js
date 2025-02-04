@@ -4,6 +4,7 @@ import ObjetSouris from "./ObjetSouris.js";
 import { rectsOverlap } from "./collisions.js";
 import { initListeners } from "./ecouteurs.js";
 import Sortie from "./Sortie.js";
+
 export default class Game {
     objetsGraphiques = [];
 
@@ -16,7 +17,7 @@ export default class Game {
         };
     }
 
-    async init(canvas) {
+    async init() {
         this.ctx = this.canvas.getContext("2d");
 
         this.player = new Player(this.canvas.width * 0.1, this.canvas.height * 0.1);
@@ -26,7 +27,6 @@ export default class Game {
         this.objetSouris = new ObjetSouris(200, 200, 25, 25, "orange");
         this.objetsGraphiques.push(this.objetSouris);
 
-
         // On cree deux obstacles
         let obstacle1 = new Obstacle(this.canvas.width * 0.3, 0, 40, this.canvas.height * 0.4, "red");
         this.objetsGraphiques.push(obstacle1);
@@ -34,8 +34,8 @@ export default class Game {
         this.objetsGraphiques.push(obstacle2);
 
         // On ajoute la sortie
-        let sortie = new Sortie(this.canvas.width * 0.9, this.canvas.height * 0.5, 100, 100, "purple");
-        this.objetsGraphiques.push(sortie);
+        this.sortie = new Sortie(this.canvas.width * 0.9, this.canvas.height * 0.5, 100, 100, "purple");
+        this.objetsGraphiques.push(this.sortie);
 
         // On initialise les écouteurs de touches, souris, etc.
         initListeners(this.inputStates, this.canvas);
@@ -49,8 +49,6 @@ export default class Game {
         this.canvas.height = window.innerHeight;
     }
 
-
-
     start() {
         console.log("Game démarré");
 
@@ -61,7 +59,7 @@ export default class Game {
 
         requestAnimationFrame(this.mainAnimationLoop.bind(this));
     }
-    
+
     mainAnimationLoop() {
         // 1 - on efface le canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -93,15 +91,12 @@ export default class Game {
         // Déplacement du joueur. 
         this.movePlayer();
 
-        // on met à jouer la position de objetSouris avec la position de la souris
-        // Pour un objet qui "suit" la souris mais avec un temps de retard, voir l'exemple
-        // du projet "charQuiTire" dans le dossier COURS
+        // on met à jour la position de objetSouris avec la position de la souris
         this.objetSouris.x = this.inputStates.mouseX;
         this.objetSouris.y = this.inputStates.mouseY;
 
         // On regarde si le joueur a atteint la sortie
-        // TODO
-
+        this.testCollisionPlayerSortie();
     }
 
     movePlayer() {
@@ -109,18 +104,18 @@ export default class Game {
         this.player.vitesseY = 0;
         
         if(this.inputStates.ArrowRight) {
-            this.player.vitesseX = 3;
+            this.player.vitesseX = 6;
         } 
         if(this.inputStates.ArrowLeft) {
-            this.player.vitesseX = -3;
+            this.player.vitesseX = -6;
         } 
 
         if(this.inputStates.ArrowUp) {
-            this.player.vitesseY = -3;
+            this.player.vitesseY = -6;
         } 
 
         if(this.inputStates.ArrowDown) {
-            this.player.vitesseY = 3;
+            this.player.vitesseY = 6;
         } 
 
         this.player.move();
@@ -134,7 +129,6 @@ export default class Game {
 
         // Teste collision avec les obstacles
         this.testCollisionPlayerObstacles();
-       
     }
 
     testCollisionPlayerBordsEcran() {
@@ -154,12 +148,18 @@ export default class Game {
         if(this.player.y - this.player.h/2 < 0) {
             this.player.y = this.player.h/2;
             this.player.vitesseY = 0;
-
         }
        
         if(this.player.y + this.player.h/2 > this.canvas.height) {
             this.player.vitesseY = 0;
             this.player.y = this.canvas.height - this.player.h/2;
+        }
+    }
+
+    testCollisionPlayerSortie() {
+        if (this.sortie && rectsOverlap(this.player.x - this.player.w / 2, this.player.y - this.player.h / 2, this.player.w, this.player.h, this.sortie.x, this.sortie.y, this.sortie.w, this.sortie.h)) {
+            alert("Niveau réussi !");
+            // Vous pouvez également ajouter d'autres actions ici, comme passer au niveau suivant
         }
     }
 
@@ -186,5 +186,4 @@ export default class Game {
             }
         });
     }
-
 }
