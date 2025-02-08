@@ -237,8 +237,18 @@ export default class Game {
                     // par exemple en le repoussant dans la direction opposée à celle de l'obstacle...
                     // Là par défaut on le renvoie en x=10 y=10 et on l'arrête
                     console.log("Collision avec obstacle");
-                    this.player.x = 10;
-                    this.player.y = 10;
+                    if (this.player.x < obj.x) {
+                        this.player.x = obj.x - this.player.w / 2;
+                    } else if (this.player.x > obj.x + obj.w) {
+                        this.player.x = obj.x + obj.w + this.player.w / 2;
+                    }
+    
+                    if (this.player.y < obj.y) {
+                        this.player.y = obj.y - this.player.h / 2;
+                    } else if (this.player.y > obj.y + obj.h) {
+                        this.player.y = obj.y + obj.h + this.player.h / 2;
+                    }
+    
                     this.player.vitesseX = 0;
                     this.player.vitesseY = 0;
                 }
