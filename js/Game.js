@@ -4,9 +4,11 @@ import ObjetSouris from "./ObjetSouris.js";
 import { rectsOverlap } from "./collisions.js";
 import { initListeners } from "./ecouteurs.js";
 import Sortie from "./Sortie.js";
+import ObjetSpecial from "./ObjetSpecial.js";
 
 export default class Game {
     objetsGraphiques = [];
+    niveau = 1;
 
     constructor(canvas) {
         this.canvas = canvas;
@@ -27,20 +29,63 @@ export default class Game {
         this.objetSouris = new ObjetSouris(200, 200, 25, 25, "orange");
         this.objetsGraphiques.push(this.objetSouris);
 
-        // On cree deux obstacles
-        let obstacle1 = new Obstacle(this.canvas.width * 0.3, 0, 40, this.canvas.height * 0.4, "red");
-        this.objetsGraphiques.push(obstacle1);
-        let obstacle2 = new Obstacle(this.canvas.width * 0.5, this.canvas.height * 0.5, 100, 100, "blue");
-        this.objetsGraphiques.push(obstacle2);
-
-        // On ajoute la sortie
-        this.sortie = new Sortie(this.canvas.width * 0.9, this.canvas.height * 0.5, 100, 100, "purple");
-        this.objetsGraphiques.push(this.sortie);
+        this.initNiveau(this.niveau);
 
         // On initialise les écouteurs de touches, souris, etc.
         initListeners(this.inputStates, this.canvas);
 
         console.log("Game initialisé");
+    }
+
+    initNiveau(niveau) {
+        // Supprimer les anciens obstacles et la sortie
+        this.objetsGraphiques = this.objetsGraphiques.filter(obj => !(obj instanceof Obstacle || obj instanceof Sortie || obj instanceof ObjetSpecial));
+
+        // Réinitialiser la position du joueur
+        this.player.x = this.canvas.width * 0.1;
+        this.player.y = this.canvas.height * 0.1;
+
+        // zone de début pour eviter de mettre des obstacles dessus
+        const startZone = {
+            x: this.player.x - this.player.w / 2,
+            y: this.player.y - this.player.h / 2,
+            w: this.player.w * 2,
+            h: this.player.h * 2
+        };
+
+        // generation des obstacles
+        for (let i = 0; i < niveau; i++) {
+            let obstacle;
+            do {
+                obstacle = new Obstacle(
+                    Math.random() * this.canvas.width * 0.8,
+                    Math.random() * this.canvas.height * 0.8,
+                    40 + Math.random() * 90,
+                    80 + Math.random() * 60,
+                    "red"
+                );
+            } while (rectsOverlap(obstacle.x, obstacle.y, obstacle.w, obstacle.h, startZone.x, startZone.y, startZone.w, startZone.h));
+            this.objetsGraphiques.push(obstacle);
+        }
+
+        // Ajouter la sortie
+        this.sortie = new Sortie(this.canvas.width * 0.9, this.canvas.height * 0.5, 100, 100, "purple");
+        this.objetsGraphiques.push(this.sortie);
+
+        // Ajout l'objet spécial avec une probabilité de 20% à partir du niveau 5
+        if (niveau >= 5 && Math.random() < 0.2) {
+            let objetSpecial;
+            do {
+                objetSpecial = new ObjetSpecial(
+                    Math.random() * this.canvas.width * 0.8,
+                    Math.random() * this.canvas.height * 0.8,
+                    30,
+                    30,
+                    "lightblue"
+                );
+            } while (rectsOverlap(objetSpecial.x, objetSpecial.y, objetSpecial.w, objetSpecial.h, startZone.x, startZone.y, startZone.w, startZone.h));
+            this.objetsGraphiques.push(objetSpecial);
+        }
     }
 
     resizeCanvas() {
@@ -97,6 +142,9 @@ export default class Game {
 
         // On regarde si le joueur a atteint la sortie
         this.testCollisionPlayerSortie();
+
+        // On regarde si le joueur a atteint l'objet spécial
+        this.testCollisionPlayerObjetSpecial();
     }
 
     movePlayer() {
@@ -158,9 +206,20 @@ export default class Game {
 
     testCollisionPlayerSortie() {
         if (this.sortie && rectsOverlap(this.player.x - this.player.w / 2, this.player.y - this.player.h / 2, this.player.w, this.player.h, this.sortie.x, this.sortie.y, this.sortie.w, this.sortie.h)) {
-            alert("Niveau réussi !");
-            
+            this.niveau++;
+            this.initNiveau(this.niveau);
         }
+    }
+
+    testCollisionPlayerObjetSpecial() {
+        this.objetsGraphiques.forEach(obj => {
+            if (obj instanceof ObjetSpecial) {
+                if (rectsOverlap(this.player.x - this.player.w / 2, this.player.y - this.player.h / 2, this.player.w, this.player.h, obj.x, obj.y, obj.w, obj.h)) {
+                    this.niveau++;
+                    this.initNiveau(this.niveau);
+                }
+            }
+        });
     }
 
     testCollisionPlayerObstacles() {
