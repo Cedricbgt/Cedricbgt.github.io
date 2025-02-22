@@ -2,3 +2,27 @@
     border: 1px solid black;
     background-color: lightgrey;
 }
+
+.player {
+    width: 32px;
+    height: 32px;
+    background-color: red;
+    position: absolute;
+    border-radius: 50%;
+}
+
+.projectile {
+    width: 10px;
+    height: 10px;
+    background-color: yellow;
+    position: absolute;
+    border-radius: 50%;
+}
+
+.enemy {
+    width: 25px;
+    height: 25px;
+    background-color: purple;
+    position: absolute;
+    border-radius: 50%;
+}

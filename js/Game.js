@@ -166,7 +166,10 @@ export default class Game {
             this.player.vitesseY = 6;
         } 
 
+        this.player.shoot(this.inputStates);
+
         this.player.move();
+        this.player.update(this.canvas);
 
         this.testCollisionsPlayer();
     }

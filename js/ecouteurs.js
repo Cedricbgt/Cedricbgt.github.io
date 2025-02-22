@@ -13,6 +13,15 @@ function initListeners(inputStates, canvas) {
         if(event.key === "ArrowDown") {
             inputStates.ArrowDown = true;
         }
+        if(event.code === "Space") {
+            inputStates.Space = true;
+        }
+        
+        // Touches de tir
+        if(event.key === "z" || event.key === "Z") inputStates.KeyZ = true;
+        if(event.key === "q" || event.key === "Q") inputStates.KeyQ = true;
+        if(event.key === "s" || event.key === "S") inputStates.KeyS = true;
+        if(event.key === "d" || event.key === "D") inputStates.KeyD = true;
     }
 
     window.onkeyup = (event) => {
@@ -29,6 +38,15 @@ function initListeners(inputStates, canvas) {
         if(event.key === "ArrowDown") {
             inputStates.ArrowDown = false;
         }
+        if(event.code === "Space") {
+            inputStates.Space = false;
+        }
+        
+        // Touches de tir
+        if(event.key === "z" || event.key === "Z") inputStates.KeyZ = false;
+        if(event.key === "q" || event.key === "Q") inputStates.KeyQ = false;
+        if(event.key === "s" || event.key === "S") inputStates.KeyS = false;
+        if(event.key === "d" || event.key === "D") inputStates.KeyD = false;
     }
 
     window.onmousemove = (event) => {
