@@ -48,12 +48,29 @@ export default class Player extends ObjectGraphique {
             directionX /= longueur;
             directionY /= longueur;
 
+            // Ajouter la vitesse du joueur à la direction du projectile
+            const playerSpeed = 6; // Vitesse de base du joueur
+            const projectileBaseSpeed = 7; // Vitesse de base du projectile
+            
+            // Calculer la vitesse du joueur en X et Y
+            const playerVelocityX = this.vitesseX / playerSpeed;
+            const playerVelocityY = this.vitesseY / playerSpeed;
+            
+            // Ajouter la vitesse du joueur à la direction du projectile
+            directionX += playerVelocityX * 0.5; // 0.5 pour réduire l'effet
+            directionY += playerVelocityY * 0.5;
+            
+            // Re-normaliser la direction
+            const newLength = Math.sqrt(directionX * directionX + directionY * directionY);
+            directionX /= newLength;
+            directionY /= newLength;
+
             const projectile = new Projectile(
                 this.x + this.w/2, 
                 this.y + this.h/2,
                 directionX,
                 directionY,
-                7 * this.projectileSpeedMultiplier // Vitesse de base * multiplicateur
+                projectileBaseSpeed * this.projectileSpeedMultiplier
             );
             
             // Appliquer le multiplicateur de taille aux projectiles
