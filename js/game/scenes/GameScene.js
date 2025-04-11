@@ -2,6 +2,7 @@ import Scene from '../../engine/core/Scene.js';
 import Player from '../entities/Player.js';
 import Room from '../world/Room.js';
 import { rectsOverlap } from '../../engine/utils/Collision.js';
+import { drawCircleWithStroke } from '../../engine/utils/Drawing.js';
 
 export default class GameScene extends Scene {
     constructor() {
@@ -167,7 +168,13 @@ export default class GameScene extends Scene {
                     this.currentRoom.doors[direction] = "unlocked";
                 }
             }
+            
+            // Faire apparaître un objet si tous les ennemis sont morts
+            this.currentRoom.spawnItem();
         }
+        
+        // Vérifier les collisions avec les objets
+        this.currentRoom.checkItemCollision(this.player);
     }
 
     draw(ctx) {
@@ -248,6 +255,16 @@ export default class GameScene extends Scene {
             }
             if (room.doors.left) {
                 ctx.fillRect(roomX - roomSize / 2 - 3, roomY - 2, 3, 4);
+            }
+
+            // Dessiner un symbole d'objet si la salle contient des objets non collectés
+            if (room.items && room.items.length > 0 && room.items.some(item => !item.collected)) {
+                ctx.save();
+                ctx.fillStyle = "yellow";
+                ctx.beginPath();
+                ctx.arc(roomX, roomY, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             }
         }
     }
@@ -437,8 +454,21 @@ export default class GameScene extends Scene {
             )) {
                 // Collision joueur-ennemi
                 console.log("Collision avec ennemi");
-                // Ici vous pouvez ajouter une logique pour faire perdre de la vie au joueur
+                // Faire perdre un demi-cœur au joueur
+                this.player.takeDamage();
             }
         }
+    }
+
+    drawEnemies() {
+        this.currentRoom.enemies.forEach(enemy => {
+            drawCircleWithStroke(
+                this.ctx,
+                enemy.position,
+                enemy.radius,
+                enemy.color,
+                enemy.color
+            );
+        });
     }
 }

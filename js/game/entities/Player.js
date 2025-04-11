@@ -12,6 +12,21 @@ export default class Player extends ObjectGraphique {
         this.projectiles = [];
         this.lastShootTime = 0;
         this.shootCooldown = 250; // temps en ms entre chaque tir
+        
+        // Système de points de vie
+        this.maxHearts = 3;
+        this.hearts = this.maxHearts; // 3 cœurs pleins
+        this.invincible = false;
+        this.invincibleTime = 0;
+        this.invincibleDuration = 1000; // 1 seconde d'invincibilité après avoir été touché
+
+        // Multiplicateurs pour les effets des objets
+        this.damageMultiplier = 1;
+        this.speedMultiplier = 1;
+        this.defenseMultiplier = 1;
+        this.projectileSpeedMultiplier = 1;
+        this.projectileSizeMultiplier = 1;
+        this.lifeSteal = 0;
     }
 
     shoot(inputStates) {
@@ -37,8 +52,13 @@ export default class Player extends ObjectGraphique {
                 this.x + this.w/2, 
                 this.y + this.h/2,
                 directionX,
-                directionY
+                directionY,
+                7 * this.projectileSpeedMultiplier // Vitesse de base * multiplicateur
             );
+            
+            // Appliquer le multiplicateur de taille aux projectiles
+            projectile.rayon *= this.projectileSizeMultiplier;
+            
             this.projectiles.push(projectile);
             this.lastShootTime = currentTime;
         }
@@ -92,18 +112,140 @@ export default class Player extends ObjectGraphique {
         // Dessiner les projectiles
         this.projectiles.forEach(projectile => projectile.draw(ctx));
 
+        // Dessiner les cœurs
+        this.drawHearts(ctx);
+
         // super.draw() dessine une croix à la position x, y
         // pour debug
         super.draw(ctx);
     }
 
+    // Dessiner les cœurs du joueur
+    drawHearts(ctx) {
+        const heartSize = 20;
+        const heartSpacing = 25;
+        const startX = 20;
+        const startY = 20;
+        
+        for (let i = 0; i < this.maxHearts; i++) {
+            const x = startX + i * heartSpacing;
+            const y = startY;
+            
+            // Dessiner le contour du cœur
+            ctx.save();
+            
+            // Déterminer si c'est un cœur complet, un demi-cœur ou un cœur vide
+            if (i < Math.floor(this.hearts)) {
+                // Cœur complet
+                ctx.fillStyle = "red";
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                this.drawHeart(ctx, x, y, heartSize);
+            } else if (i < Math.ceil(this.hearts)) {
+                // Demi-cœur - on dessine seulement la moitié gauche
+                ctx.fillStyle = "red";
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                this.drawHalfHeart(ctx, x, y, heartSize);
+            } else {
+                // Cœur vide - on dessine seulement le contour
+                ctx.fillStyle = "transparent";
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 2;
+                this.drawHeart(ctx, x, y, heartSize);
+            }
+            
+            ctx.restore();
+        }
+    }
+    
+    // Dessiner un cœur complet
+    drawHeart(ctx, x, y, size) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + size/4);
+        ctx.bezierCurveTo(
+            x, y, 
+            x - size/2, y, 
+            x - size/2, y + size/4
+        );
+        ctx.bezierCurveTo(
+            x - size/2, y + size/2, 
+            x, y + size, 
+            x, y + size
+        );
+        ctx.bezierCurveTo(
+            x, y + size, 
+            x + size/2, y + size/2, 
+            x + size/2, y + size/4
+        );
+        ctx.bezierCurveTo(
+            x + size/2, y, 
+            x, y, 
+            x, y + size/4
+        );
+        ctx.fill();
+        ctx.stroke();
+    }
+    
+    // Dessiner un demi-cœur (moitié gauche)
+    drawHalfHeart(ctx, x, y, size) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + size/4);
+        ctx.bezierCurveTo(
+            x, y, 
+            x - size/2, y, 
+            x - size/2, y + size/4
+        );
+        ctx.bezierCurveTo(
+            x - size/2, y + size/2, 
+            x, y + size, 
+            x, y + size
+        );
+        ctx.bezierCurveTo(
+            x, y + size, 
+            x + size/4, y + size/2, 
+            x + size/4, y + size/4
+        );
+        ctx.bezierCurveTo(
+            x + size/4, y, 
+            x, y, 
+            x, y + size/4
+        );
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    // Perdre un demi-cœur
+    takeDamage() {
+        if (!this.invincible) {
+            // Appliquer le multiplicateur de défense aux dégâts
+            const damage = 0.5 / this.defenseMultiplier;
+            this.hearts -= damage;
+            
+            this.invincible = true;
+            this.invincibleTime = Date.now();
+            
+            // Si le joueur n'a plus de points de vie
+            if (this.hearts <= 0) {
+                this.hearts = 0;
+                // Ici, vous pourriez ajouter une logique pour game over
+                console.log("Game Over!");
+            }
+        }
+    }
+
     move() {
-        this.x += this.vitesseX;
-        this.y += this.vitesseY;
+        this.x += this.vitesseX * this.speedMultiplier;
+        this.y += this.vitesseY * this.speedMultiplier;
     }
 
     update(canvas) {
         this.move();
+        
+        // Vérifier l'invincibilité
+        if (this.invincible && Date.now() - this.invincibleTime > this.invincibleDuration) {
+            this.invincible = false;
+        }
         
         // Mettre à jour les projectiles
         for(let i = this.projectiles.length - 1; i >= 0; i--) {

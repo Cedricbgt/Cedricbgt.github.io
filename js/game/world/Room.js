@@ -1,6 +1,7 @@
 import Enemy from "../entities/Enemy.js";
 import Obstacle from "./Obstacle.js";
 import { rectsOverlap } from "../../engine/utils/Collision.js";
+import Item from "../entities/Item.js";
 
 export default class Room {
     constructor(x, y, type = "normal", canvas) {
@@ -11,6 +12,9 @@ export default class Room {
         this.type = type; // Type de salle (normal, boss, trésor, etc.)
         this.obstacles = [];
         this.enemies = [];
+        this.items = []; // Liste des objets dans la salle
+        this.hasItem = false; // Indique si la salle a un objet
+        this.itemType = null; // Type d'objet dans la salle
         this.doors = {
             top: false,
             right: false,
@@ -24,6 +28,9 @@ export default class Room {
     generate(difficulty, player) {
         this.obstacles = [];
         this.enemies = [];
+        this.items = [];
+        this.hasItem = false;
+        this.itemType = null;
 
         // Zone de sécurité au centre pour le spawn du joueur
         const safeZone = {
@@ -69,6 +76,43 @@ export default class Room {
                 1 + difficulty * 0.2
             );
             this.enemies.push(enemy);
+        }
+        
+        // Décider si cette salle aura un objet (30% de chance)
+        if (Math.random() < 0.3) {
+            this.hasItem = true;
+            this.itemType = this.getRandomItemType();
+        }
+    }
+    
+    // Obtenir un type d'objet aléatoire
+    getRandomItemType() {
+        const itemTypes = [
+            "health",         // +1 point de vie
+            "damage",         // +50% de dégâts
+            "speed",          // +30% de vitesse
+            "defense",        // -30% de dégâts reçus
+            "projectileSpeed", // +40% de vitesse des projectiles
+            "projectileSize",  // +50% de taille des projectiles
+            "fireRate",       // -30% de délai entre les tirs
+            "lifeSteal",      // 10% de vol de vie
+            "shield",         // +1 bouclier
+            "extraHeart"      // +1 cœur maximum
+        ];
+        
+        return itemTypes[Math.floor(Math.random() * itemTypes.length)];
+    }
+    
+    // Faire apparaître l'objet au centre de la salle
+    spawnItem() {
+        if (this.hasItem && this.enemies.length === 0 && this.items.length === 0) {
+            const item = new Item(
+                this.width / 2,
+                this.height / 2,
+                this.itemType
+            );
+            this.items.push(item);
+            console.log(`Objet ${this.itemType} apparaît dans la salle (${this.x}, ${this.y})`);
         }
     }
 
@@ -146,6 +190,9 @@ export default class Room {
 
         // Dessiner les obstacles
         this.obstacles.forEach(obstacle => obstacle.draw(ctx));
+        
+        // Dessiner les objets
+        this.items.forEach(item => item.draw(ctx));
     }
 
     // Dessiner les portes
@@ -255,5 +302,23 @@ export default class Room {
     // Vérifier si tous les ennemis sont morts
     areAllEnemiesDead() {
         return this.enemies.length === 0;
+    }
+    
+    // Vérifier si le joueur touche un objet
+    checkItemCollision(player) {
+        for (let i = 0; i < this.items.length; i++) {
+            const item = this.items[i];
+            if (!item.collected && rectsOverlap(
+                player.x - player.w/2, player.y - player.h/2, 
+                player.w, player.h,
+                item.x - item.w/2, item.y - item.h/2, 
+                item.w, item.h
+            )) {
+                // Le joueur touche l'objet
+                item.applyEffects(player);
+                return true;
+            }
+        }
+        return false;
     }
 } 
