@@ -1,6 +1,6 @@
-import ObjectGraphique from "./ObjectGraphique.js";
+import ObjectGraphique from "../../engine/core/ObjectGraphique.js";
 
-export default class ObjetSouris extends ObjectGraphique {
+export default class Sortie extends ObjectGraphique {
     constructor(x, y, w, h, couleur) {
         super(x, y, w, h, couleur);
     }
@@ -11,4 +11,4 @@ export default class ObjetSouris extends ObjectGraphique {
         ctx.fillRect(this.x, this.y, this.w, this.h);
         ctx.restore();
     }
-}   
+}

@@ -1,5 +1,5 @@
-import ObjectGraphique from "./ObjectGraphique.js";
-import { drawCircleImmediat } from "./utils.js";   
+import ObjectGraphique from "../../engine/core/ObjectGraphique.js";
+import { drawCircleImmediat } from "../../engine/utils/Drawing.js";   
 import Projectile from "./Projectile.js";
 
 export default class Player extends ObjectGraphique {

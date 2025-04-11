@@ -1,4 +1,4 @@
-import ObjectGraphique from "./ObjectGraphique.js";
+import ObjectGraphique from "../../engine/core/ObjectGraphique.js";
 
 export default class Projectile extends ObjectGraphique {
     constructor(x, y, directionX, directionY, vitesse = 7) {
@@ -7,6 +7,7 @@ export default class Projectile extends ObjectGraphique {
         this.directionY = directionY;
         this.vitesse = vitesse;
         this.couleur = "yellow";
+        this.rayon = 5;
     }
 
     move() {
@@ -18,7 +19,7 @@ export default class Projectile extends ObjectGraphique {
         ctx.save();
         ctx.fillStyle = this.couleur;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 5, 0, 2 * Math.PI);
+        ctx.arc(this.x, this.y, this.rayon, 0, 2 * Math.PI);
         ctx.fill();
         ctx.restore();
     }

@@ -1,4 +1,4 @@
-import ObjectGraphique from "./ObjectGraphique.js";
+import ObjectGraphique from "../../engine/core/ObjectGraphique.js";
 
 export default class ObjetSpecial extends ObjectGraphique {
     constructor(x, y, w, h, couleur) {
