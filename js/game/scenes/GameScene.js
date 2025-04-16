@@ -144,14 +144,14 @@ export default class GameScene extends Scene {
     update(deltaTime) {
         // Mettre à jour le cooldown de transition
         if (this.transitionCooldown > 0) {
-            this.transitionCooldown -= 60 * deltaTime; // Convertir en frames (60 FPS)
+            this.transitionCooldown -= deltaTime; // En secondes
         }
         
         // Déplacer le joueur
-        this.movePlayer();
+        this.movePlayer(deltaTime);
         
         // Mettre à jour les ennemis
-        this.updateEnemies();
+        this.updateEnemies(deltaTime);
         
         // Tester les collisions projectiles-ennemis
         this.testCollisionProjectilesEnemies();
@@ -269,29 +269,30 @@ export default class GameScene extends Scene {
         }
     }
 
-    movePlayer() {
+    movePlayer(deltaTime) {
         this.player.vitesseX = 0;
         this.player.vitesseY = 0;
         
+        const baseSpeed = 300; // pixels/seconde
         if(this.inputStates.ArrowRight) {
-            this.player.vitesseX = 6;
+            this.player.vitesseX = baseSpeed;
         } 
         if(this.inputStates.ArrowLeft) {
-            this.player.vitesseX = -6;
+            this.player.vitesseX = -baseSpeed;
         } 
         if(this.inputStates.ArrowUp) {
-            this.player.vitesseY = -6;
+            this.player.vitesseY = -baseSpeed;
         } 
         if(this.inputStates.ArrowDown) {
-            this.player.vitesseY = 6;
+            this.player.vitesseY = baseSpeed;
         } 
 
         // Tir
         this.player.shoot(this.inputStates);
 
         // Mettre à jour la position du joueur
-        this.player.move();
-        this.player.update(this.canvas);
+        this.player.move(deltaTime);
+        this.player.update(this.canvas, deltaTime);
 
         // Gérer les collisions avec les bords du canvas
         this.testCollisionPlayerBordsEcran();
@@ -350,7 +351,7 @@ export default class GameScene extends Scene {
             this.currentRoom.visited = true;
             
             // Définir un temps de refroidissement après la transition
-            this.transitionCooldown = 30; // environ 0.5 seconde à 60 FPS
+            this.transitionCooldown = 0.5; // 0.5 seconde
             this.transitioning = false;
         }
     }
@@ -399,9 +400,10 @@ export default class GameScene extends Scene {
         });
     }
 
-    updateEnemies() {
+    updateEnemies(deltaTime) {
         this.currentRoom.enemies.forEach(enemy => {
-            enemy.suivreJoueur(this.player);
+            if(typeof enemy.suivreJoueur === 'function')
+                enemy.suivreJoueur(this.player, deltaTime);
         });
     }
 

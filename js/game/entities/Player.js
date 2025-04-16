@@ -56,21 +56,33 @@ export default class Player extends ObjectGraphique {
             const playerVelocityX = this.vitesseX / playerSpeed;
             const playerVelocityY = this.vitesseY / playerSpeed;
             
-            // Ajouter la vitesse du joueur à la direction du projectile
-            directionX += playerVelocityX * 0.5; // 0.5 pour réduire l'effet
-            directionY += playerVelocityY * 0.5;
-            
-            // Re-normaliser la direction
-            const newLength = Math.sqrt(directionX * directionX + directionY * directionY);
-            directionX /= newLength;
-            directionY /= newLength;
+
+            // Calcul de la portée en fonction de la direction du tir et du déplacement du joueur
+            // Plus le joueur "va à l'opposé" du tir, plus la portée est réduite
+            // Portée de base
+            let baseRange = 400; // pixels
+            // Calcul du facteur de réduction si le joueur va à l'opposé
+            const playerSpeedNorm = Math.sqrt(this.vitesseX * this.vitesseX + this.vitesseY * this.vitesseY);
+            let portee = baseRange;
+            if (playerSpeedNorm > 0) {
+                // Produit scalaire entre la direction du tir et la direction du joueur
+                const playerDirX = this.vitesseX / playerSpeedNorm;
+                const playerDirY = this.vitesseY / playerSpeedNorm;
+                const dot = directionX * playerDirX + directionY * playerDirY;
+                // Si dot < 0, le joueur va à l'opposé du tir
+                // Réduire la portée de 40% si le joueur va pile à l'opposé
+                portee = baseRange * (1 + 0.4 * dot); // dot varie de -1 à 1
+                // Clamp la portée minimale
+                if (portee < baseRange * 0.6) portee = baseRange * 0.6;
+            }
 
             const projectile = new Projectile(
                 this.x + this.w/2, 
                 this.y + this.h/2,
                 directionX,
                 directionY,
-                projectileBaseSpeed * this.projectileSpeedMultiplier
+                1000 * this.projectileSpeedMultiplier,
+                portee
             );
             
             // Appliquer le multiplicateur de taille aux projectiles
@@ -251,13 +263,13 @@ export default class Player extends ObjectGraphique {
         }
     }
 
-    move() {
-        this.x += this.vitesseX * this.speedMultiplier;
-        this.y += this.vitesseY * this.speedMultiplier;
+    move(deltaTime) {
+        this.x += this.vitesseX * this.speedMultiplier * deltaTime;
+        this.y += this.vitesseY * this.speedMultiplier * deltaTime;
     }
 
-    update(canvas) {
-        this.move();
+    update(canvas, deltaTime) {
+        this.move(deltaTime);
         
         // Vérifier l'invincibilité
         if (this.invincible && Date.now() - this.invincibleTime > this.invincibleDuration) {
@@ -266,11 +278,13 @@ export default class Player extends ObjectGraphique {
         
         // Mettre à jour les projectiles
         for(let i = this.projectiles.length - 1; i >= 0; i--) {
-            this.projectiles[i].move();
-            
-            // Supprimer les projectiles hors écran
-            if(this.projectiles[i].x < 0 || this.projectiles[i].x > canvas.width ||
-               this.projectiles[i].y < 0 || this.projectiles[i].y > canvas.height) {
+            this.projectiles[i].move(deltaTime);
+            // Supprimer les projectiles hors écran ou hors portée
+            if(
+                this.projectiles[i].x < 0 || this.projectiles[i].x > canvas.width ||
+                this.projectiles[i].y < 0 || this.projectiles[i].y > canvas.height ||
+                (typeof this.projectiles[i].estHorsPortee === 'function' && this.projectiles[i].estHorsPortee())
+            ) {
                 this.projectiles.splice(i, 1);
             }
         }
