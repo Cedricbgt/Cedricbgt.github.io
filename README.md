@@ -2,42 +2,66 @@
 
 ## Description
 
-**Jeu9fevCanva** est un jeu développé en HTML5 Canvas et JavaScript. Le joueur incarne un monstre qui doit naviguer à travers des salles remplies d'obstacles et d'ennemis. L'objectif est d'éliminer tous les ennemis pour révéler un escalier permettant de passer au niveau suivant. À partir du niveau 5, un objet spécial peut apparaître, offrant une manière alternative de progresser.
+**Jeu9fevCanva** est un jeu développé en HTML5 Canvas et JavaScript. Le joueur incarne un monstre qui doit explorer un donjon généré aléatoirement, éliminer les ennemis, éviter les obstacles et atteindre un escalier pour passer au niveau suivant. À partir du niveau 5, un objet spécial peut apparaître, offrant des bonus ou des moyens alternatifs de progression.
 
 ## Fonctionnalités
 
-- **Déplacement du joueur** : Contrôlez le monstre avec les touches fléchées.
-- **Gestion des ennemis** : Éliminez tous les ennemis pour révéler l'escalier.
-- **Système d'étages** : Passez au niveau suivant en utilisant l'escalier.
-- **Objet spécial** : À partir du niveau 5, un objet spécial peut apparaître avec une probabilité de 20%, permettant de passer directement au niveau suivant.
-- **Obstacles dynamiques** : Évitez les obstacles rouges générés aléatoirement.
-- **Progression infinie** : Chaque étage est généré de manière unique, augmentant la difficulté au fil du temps.
+- **Exploration de donjons** : Chaque étage est généré aléatoirement avec des salles connectées.
+- **Système d'ennemis** : Combattez des ennemis avec des projectiles.
+- **Obstacles dynamiques** : Évitez les obstacles rouges dans chaque salle.
+- **Escalier unique** : Révélez un escalier pour passer au niveau suivant en éliminant tous les ennemis de l'étage.
+- **Objets spéciaux** : À partir du niveau 5, des objets spéciaux peuvent apparaître avec des effets variés (bonus de vie, vitesse, etc.).
+- **Progression infinie** : La difficulté augmente à chaque étage.
 
 ## Comment jouer
 
-1. Utilisez les **touches fléchées** pour déplacer le monstre.
-2. Éliminez tous les ennemis dans une salle pour révéler l'escalier.
-3. Prenez l'escalier pour passer au niveau suivant.
-4. À partir du **niveau 5**, cherchez l'objet spécial bleu clair pour passer directement au niveau suivant.
-
-## Technologies utilisées
-
-- **HTML5 Canvas** : Pour le rendu graphique.
-- **JavaScript** : Pour la logique du jeu et les interactions.
-- **CSS** : Pour le style de la page.
+1. **Déplacement** : Utilisez les touches fléchées pour déplacer le monstre.
+2. **Tir** : Utilisez les touches `Z`, `Q`, `S`, `D` pour tirer dans différentes directions.
+3. **Objectif** : Éliminez tous les ennemis pour révéler l'escalier et passez au niveau suivant.
+4. **Bonus** : Collectez des objets spéciaux pour améliorer vos capacités.
 
 ## Structure du projet
 
-- `index.html` : Structure HTML de la page.
-- `css/style.css` : Styles CSS pour le jeu.
-- `js/main.js` : Point d'entrée principal du jeu.
-- `js/Game.js` : Gère la logique principale du jeu.
-- `js/Player.js` : Définit la classe `Player`.
-- `js/Obstacle.js` : Définit la classe `Obstacle`.
-- `js/ObjetSouris.js` : Définit la classe `ObjetSouris`.
-- `js/ObjetSpecial.js` : Définit la classe `ObjetSpecial`.
-- `js/collisions.js` : Contient les fonctions de détection de collision.
-- `js/ecouteurs.js` : Initialise les écouteurs d'événements pour le clavier et la souris.
+### Fichiers principaux
+
+- **`index.html`** : Structure HTML de la page.
+- **`css/style.css`** : Styles CSS pour le jeu.
+- **`js/main.js`** : Point d'entrée principal du jeu.
+
+### Répertoire `js/engine`
+
+Contient les composants du moteur de jeu :
+
+- **`core/`** :
+  - `Engine.js` : Gère la boucle de jeu et le rendu.
+  - `Scene.js` : Classe de base pour les scènes.
+  - `ObjectGraphique.js` : Classe de base pour les objets graphiques.
+  - `GameObject.js` : Classe de base pour les objets du jeu.
+  - `InputManager.js` : Gestion des entrées clavier/souris.
+  - `ecouteurs.js` : Initialise les écouteurs d'événements.
+- **`utils/`** :
+  - `Collision.js` : Fonctions utilitaires pour la détection de collisions.
+  - `Drawing.js` : Fonctions utilitaires pour le dessin.
+  - `Math.js` : Fonctions mathématiques utilitaires.
+
+### Répertoire `js/game`
+
+Contient la logique spécifique au jeu :
+
+- **`entities/`** :
+  - `Player.js` : Définit la classe du joueur.
+  - `Enemy.js` : Définit la classe des ennemis.
+  - `Projectile.js` : Définit les projectiles tirés par le joueur.
+  - `Item.js` : Définit les objets spéciaux collectables.
+  - `ObjetSouris.js` : Exemple d'objet interactif.
+- **`world/`** :
+  - `Dungeon.js` : Gère la génération des étages.
+  - `Room.js` : Définit les salles du donjon.
+  - `Obstacle.js` : Définit les obstacles dans les salles.
+  - `Sortie.js` : Définit l'escalier pour passer au niveau suivant.
+  - `ObjetSpecial.js` : Définit les objets spéciaux.
+- **`scenes/`** :
+  - `GameScene.js` : Gère la logique principale de la scène de jeu.
 
 ## Lien pour jouer
 
@@ -47,5 +71,5 @@ Jouez au jeu en ligne ici : [Jeu9fevCanva](https://cedricbgt.github.io/)
 
 - Ajout de nouveaux types d'ennemis avec des comportements variés.
 - Système de score pour suivre la progression du joueur.
-- Ajout de power-ups pour améliorer les capacités du joueur.
-- Musiques et effets sonores pour une meilleure immersion.
+- Ajout de musiques et d'effets sonores pour une meilleure immersion.
+- Création de boss uniques pour certains étages.
