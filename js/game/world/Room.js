@@ -2,6 +2,7 @@ import Enemy from "../entities/Enemy.js";
 import Obstacle from "./Obstacle.js";
 import { rectsOverlap } from "../../engine/utils/Collision.js";
 import Item from "../entities/Item.js";
+import Sortie from './Sortie.js';
 
 export default class Room {
     constructor(x, y, type = "normal", canvas) {
@@ -22,6 +23,8 @@ export default class Room {
             left: false
         };
         this.visited = false;
+        this.stairs = new Sortie(this.width / 2 - 20, this.height / 2 - 20, 40, 40, "red");
+        this.stairs.hidden = true; // Escalier caché par défaut
     }
 
     // Générer le contenu de la salle
@@ -193,6 +196,11 @@ export default class Room {
         
         // Dessiner les objets
         this.items.forEach(item => item.draw(ctx));
+
+        // Dessiner l'escalier si visible
+        if (!this.stairs.hidden) {
+            this.stairs.draw(ctx);
+        }
     }
 
     // Dessiner les portes
@@ -301,7 +309,7 @@ export default class Room {
 
     // Vérifier si tous les ennemis sont morts
     areAllEnemiesDead() {
-        return this.enemies.length === 0;
+        return this.enemies.every(enemy => enemy.isDead);
     }
     
     // Vérifier si le joueur touche un objet
@@ -321,4 +329,8 @@ export default class Room {
         }
         return false;
     }
-} 
+
+    revealStairs() {
+        this.stairs.hidden = false;
+    }
+}

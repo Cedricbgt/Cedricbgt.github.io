@@ -1,6 +1,7 @@
 import Scene from '../../engine/core/Scene.js';
 import Player from '../entities/Player.js';
 import Room from '../world/Room.js';
+import Sortie from '../world/Sortie.js';
 import { rectsOverlap } from '../../engine/utils/Collision.js';
 import { drawCircleWithStroke } from '../../engine/utils/Drawing.js';
 
@@ -13,6 +14,7 @@ export default class GameScene extends Scene {
         this.currentRoomCoords = { x: 0, y: 0 }; // Coordonnées de la salle actuelle
         this.transitioning = false; // En transition entre deux salles
         this.transitionCooldown = 0; // Temps de refroidissement après transition
+        this.stairs = null; // Escalier unique pour l'étage
     }
 
     init(engine) {
@@ -73,6 +75,12 @@ export default class GameScene extends Scene {
         // Positionner le joueur au centre de la salle de départ
         this.player.x = this.canvas.width / 2;
         this.player.y = this.canvas.height / 2;
+
+        // Placer un escalier dans une salle aléatoire
+        const randomRoomKey = Object.keys(this.rooms)[Math.floor(Math.random() * Object.keys(this.rooms).length)];
+        const randomRoom = this.rooms[randomRoomKey];
+        this.stairs = new Sortie(randomRoom.x + this.canvas.width / 2 - 20, randomRoom.y + this.canvas.height / 2 - 20, 40, 40, "red");
+        this.stairs.hidden = true; // Escalier caché par défaut
     }
 
     // Obtenir les coordonnées possibles pour les nouvelles salles
@@ -172,9 +180,33 @@ export default class GameScene extends Scene {
             // Faire apparaître un objet si tous les ennemis sont morts
             this.currentRoom.spawnItem();
         }
+
+        // Révéler l'escalier si tous les ennemis de l'étage sont morts
+        if (this.areAllEnemiesDead() && this.stairs.hidden) {
+            this.stairs.hidden = false;
+        }
+
+        // Vérifier si le joueur prend l'escalier
+        this.checkStairsCollision();
         
         // Vérifier les collisions avec les objets
         this.currentRoom.checkItemCollision(this.player);
+    }
+
+    areAllEnemiesDead() {
+        return Object.values(this.rooms).every(room => room.areAllEnemiesDead());
+    }
+
+    checkStairsCollision() {
+        if (!this.stairs.hidden && rectsOverlap(
+            this.player.x - this.player.w / 2, this.player.y - this.player.h / 2,
+            this.player.w, this.player.h,
+            this.stairs.x, this.stairs.y, this.stairs.w, this.stairs.h
+        )) {
+            console.log("Escalier pris, passage au niveau suivant !");
+            this.etage++;
+            this.generateFloor(this.etage); // Générer un nouvel étage
+        }
     }
 
     draw(ctx) {
@@ -191,6 +223,11 @@ export default class GameScene extends Scene {
         
         // Dessiner la minimap
         this.drawMinimap(ctx);
+
+        // Dessiner l'escalier si visible
+        if (this.stairs && !this.stairs.hidden) {
+            this.stairs.draw(ctx);
+        }
     }
 
     drawMinimap(ctx) {
